@@ -52,6 +52,7 @@ package com.becarella.ustream {
             Security.allowDomain('*');
             this.size = size;
             this.channel = channel;
+            playing = false;
             
             fillBackground();
             initLabel();
@@ -105,15 +106,14 @@ package com.becarella.ustream {
             var Viewer:Class = loader.contentLoaderInfo.applicationDomain.getDefinition('tv.ustream.viewer.logic.Logic') as Class;
             viewer = new Viewer();
             Viewer.debug = false;
+            viewer.playing = _playing;
             viewer.addEventListener("createChannel", onCreateChannel);
             
             viewer.display.mouseEnabled = false;
-            trace("viewer.display.mouseEnabled = " + viewer.display.mouseEnabled);
             viewer.display.width = size;
             viewer.display.height = size;
             viewer.display.x = -size/2;
             viewer.display.y = -size/2;
-            viewer.playing = _playing;
             
             //viewer.display.doubleClickEnabled = true;
             viewer.display.addEventListener(MouseEvent.DOUBLE_CLICK, onDoubleClick); // not working, why??
@@ -127,8 +127,6 @@ package com.becarella.ustream {
         }
         
         private function onCreateChannel(event:Event) : void {
-            trace("onCreateChannel: viewer.display.mouseEnabled = " + viewer.display.mouseEnabled);
-            trace("onCreateChannel: viewer.display.buttonMode = " + viewer.display.buttonMode);
             viewer.removeEventListener("createChannel", onCreateChannel);
             viewer.channel.addEventListener("offline", onOffline);
             viewer.channel.addEventListener("online", onOnline);
