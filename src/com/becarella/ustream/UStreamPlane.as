@@ -137,7 +137,7 @@ package com.becarella.ustream {
         }
         
         private function onMeta(event:Event) : void {
-            viewer.channel.removeEventListener("data", onMeta);
+            viewer.channel.removeEventListener("meta", onMeta);
             updateLabel();
         }
         
