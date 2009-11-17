@@ -52,18 +52,23 @@ package com.becarella.ustream {
         private static const TURN_STEPS:Number = 10;
         private var currentStep:int = 0;
         
+        private var rslLoader:Loader;
         
         
         /** 
          * Create a cube with the specified size for the height and width
          */
-        public function UStreamCube(size:int) {
+        public function UStreamCube(size:int, cids:Array = null, loader:Loader = null) {
             this.size = size;
+            this.rslLoader = loader;
             halfSize = size/2;
 
+            if (!cids) {
+                cids = new Array();
+            }
             planes = new Array();
             for (var i:int = 0; i<NUM_PLANES; i++) {
-                planes[i] = new UStreamPlane(size);
+                planes[i] = new UStreamPlane(size, cids[i], rslLoader);
                 planes[i].name = planeNames[i];
                 planes[i].doubleClickEnabled = true;
                 planes[i].addEventListener(MouseEvent.DOUBLE_CLICK, onDoubleClick);
@@ -98,7 +103,7 @@ package com.becarella.ustream {
          * Load the specified UStream channel on the given side
          */
         public function loadChannel(side:int, channel:String) : void {
-            if (side >= 0 && side < 6) {
+            if (side >= 0 && side < NUM_PLANES) {
                 planes[side].channel = channel;
             }
         }

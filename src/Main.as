@@ -25,6 +25,7 @@ package {
     import flash.events.ContextMenuEvent;
     
     import com.becarella.ustream.UStreamCube;
+    import com.becarella.ustream.UStreamPlane;
          
     [SWF(width="400", height="400", frameRate="30", backgroundColor="#0000FF")]
     
@@ -45,31 +46,45 @@ package {
         
         private var cube:UStreamCube;
         
+        private var loader:Loader;
         
         /** 
          * Initialize the cube with channels passed in from the flashvars
          */
         public function Main() {
             trace("Loading UStream Cube");
-            trace("Stage size: " + stage.stageWidth + " x " + stage.stageHeight);
-            var cubeSize:int =stage.stageWidth;
-            cube = new UStreamCube(cubeSize);
-            cube.z = cubeSize;
-            cube.x = cubeSize/2;
-            cube.y = cubeSize/2;
+            
+            // Load the ustream viewer rsl once
+            loader = new Loader();
+            loader.contentLoaderInfo.addEventListener("complete", initCube);
+            loader.load(new URLRequest('http://www.ustream.tv/flash/viewer.rsl.swf'));
+        }
+        
+        
+        
+        private function initCube(event:Event) : void {
             
             // Grab channel ids from the flashvars and 
             // setup the cube channels
             var cids:String = loaderInfo.parameters.cids;            
             if (cids) {
-                var cidList:Array = cids.split(",");
-                for (var i:int = 0; i<cidList.length && i < 6; i++) {
-                    cube.loadChannel(i, cidList[i]);
-                }
-            }
+                var cubeSize:int =stage.stageWidth;
+                cube = new UStreamCube(cubeSize, cids.split(","), loader);
+                cube.z = cubeSize;
+                cube.x = cubeSize/2;
+                cube.y = cubeSize/2;
             
-            addChild(cube);
-            initCubeMenu();
+                addChild(cube);
+                initCubeMenu();
+            }
+            else {
+                var plane:UStreamPlane = new UStreamPlane(400, null, loader);
+                plane.playing = true;
+                plane.x = 200;
+                plane.y = 200;
+                plane.channel = "1041782";  // Tower Bridge channel
+                addChild(plane);
+            }
         }    
         
         

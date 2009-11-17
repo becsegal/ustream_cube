@@ -46,22 +46,36 @@ package com.becarella.ustream {
         
         private var lastClickTime:int = 0;
 
-        public function UStreamPlane(size:int, channel:String = null) {
+        /** 
+         * Create a new plane with the given size and play the given channel 
+         *
+         * @param width and height of the plane
+         * @param channel id (optional)
+         * @param loader with ustream rsl preloaded (optional)
+         */
+        public function UStreamPlane(size:int, channel:String = null, loader:Loader = null) {
             // we have to allow the logic loaded from ustream.tv 
             // to access the stage and loaderInfo
             Security.allowDomain('*');
+            
             this.size = size;
             this.channel = channel;
-            playing = false;
+            this.loader = loader;
+            
+            _playing = false;
             
             fillBackground();
             initLabel();
 
             // Next, create a Loader object, and set up a listener 
             // to watch the loader progress
-            loader = new Loader();
-            loader.contentLoaderInfo.addEventListener('complete', onComplete);
-            loader.load(new URLRequest('http://www.ustream.tv/flash/viewer.rsl.swf'));
+            if (!loader) {
+                loader = new Loader();
+                loader.contentLoaderInfo.addEventListener("complete", onComplete);
+                loader.load(new URLRequest('http://www.ustream.tv/flash/viewer.rsl.swf'));
+            } else {
+                onComplete();
+            }
         }
         
         
@@ -74,10 +88,14 @@ package com.becarella.ustream {
          *
          * If using a UStream channel, you can skip the brand id and slash.
          */
-        public function set channel(value:String) : void {
+        public function set channel(value:String) : void {            
             _channel = value;
             if (viewer) {
-                viewer.createChannel(_channel);
+                try {
+                    viewer.createChannel(_channel);
+                } catch (e:Error) {
+                    trace("[UStreamPlane] error: " + e);
+                }
             }
         }
         
@@ -86,8 +104,8 @@ package com.becarella.ustream {
          * Play or pause the stream
          */
         public function set playing(value:Boolean) : void {
-            if (_playing == value) { return; }
             _playing = value;
+            if (viewer && viewer.playing == _playing) { return; }
             if (viewer) {
                 viewer.playing = _playing;
             }
@@ -98,22 +116,22 @@ package com.becarella.ustream {
         /**
          * RSL loaded. Setup the viewer.
          */
-        private function onComplete(event:Event) : void {
-            loader.contentLoaderInfo.removeEventListener('complete', onComplete);
+        private function onComplete(event:Event = null) : void {
+            loader.contentLoaderInfo.removeEventListener("complete", onComplete);
             
             // After we made sure that all the required classes are loaded 
             // from the logic SWF we can initiate the Logic class.
             var Viewer:Class = loader.contentLoaderInfo.applicationDomain.getDefinition('tv.ustream.viewer.logic.Logic') as Class;
             viewer = new Viewer();
+            playing = _playing;
             Viewer.debug = false;
-            viewer.playing = _playing;
-            viewer.addEventListener("createChannel", onCreateChannel);
             
-            viewer.display.mouseEnabled = false;
             viewer.display.width = size;
             viewer.display.height = size;
             viewer.display.x = -size/2;
             viewer.display.y = -size/2;
+            
+            viewer.addEventListener("createChannel", onCreateChannel);
             
             //viewer.display.doubleClickEnabled = true;
             viewer.display.addEventListener(MouseEvent.DOUBLE_CLICK, onDoubleClick); // not working, why??
@@ -122,7 +140,7 @@ package com.becarella.ustream {
             addChild(viewer.display);
 
             if (_channel) {
-                viewer.createChannel(_channel);
+                channel = _channel;
             }
         }
         
@@ -130,12 +148,12 @@ package com.becarella.ustream {
             viewer.removeEventListener("createChannel", onCreateChannel);
             viewer.channel.addEventListener("offline", onOffline);
             viewer.channel.addEventListener("online", onOnline);
-            viewer.channel.addEventListener("meta", onMeta);
+            viewer.channel.addEventListener("data", onData);
             updateLabel();
         }
         
-        private function onMeta(event:Event) : void {
-            viewer.channel.removeEventListener("meta", onMeta);
+        private function onData(event:Event) : void {
+            viewer.channel.removeEventListener("data", onData);
             updateLabel();
         }
         
@@ -145,6 +163,7 @@ package com.becarella.ustream {
         }
         
         private function onOnline(event:Event) : void {
+            playing = _playing;
             online = true;
             updateLabel();
         }
@@ -158,7 +177,6 @@ package com.becarella.ustream {
          * until I get a proper doubleClick working
          */
         private function onDoubleClick(event:MouseEvent) : void {
-            trace("[UStreamPlane.onDoubleClick] " + name);
             dispatchEvent(event);
         }
         
