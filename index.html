@@ -15,7 +15,8 @@
         params.wmode = "transparent";
         var flashvars = queryStringToArray();
         if (!flashvars.cids) { // setup default channels
-            flashvars.cids = "1041782,522594,440966,965158,43162,1909916";
+            //flashvars.cids = "1041782,522594,440966,965158,43162,1909916";
+            flashvars.cids = "1041782,1507098,440966,965158,43162,1909916";
         }
         swfobject.embedSWF("UStreamCube.swf", "swf", "400", "400", "10.0.0", "http://becarella.github.com/expressInstall.swf", flashvars, params);
     </script>
@@ -39,14 +40,24 @@
         <div id="swf"></div>
     </div>
     
-    <div style="float: left; padding-top: 50px;">
+    <div style="padding-top: 50px;">
         <h3>To use:</h3>
         <br />
         <ul> 
-            <li>Click and drag the cube to rotate it</li>
+            <li>Click and drag the cube to rotate it (you may have to drag from the top or bottom of a side if you can't drag the video)</li>
             <li>Right-click and choose a channel</li>
             <li>Double click a side to have it face the camera squarely</li>
+            <li>Set your own channels by changing the comma-separated channel ids (cids) in the url:<br/>
+                <a href="index.html?cids=1041782,1507098,440966,965158,43162,1909916">index.html?cids=1041782,1507098,440966,965158,43162,1909916</a></li>
         </ul>
+        <br/>
+        <h3>Known issues:</h3>
+        <br/>
+        <ul>
+            <li>You may have to click above or below the video to drag if you can't drag from the video directly</li>
+            <li>Ads play to the end even if you turn away, so you may hear audio from 2 sources</li>
+        </ul>
+            
     </div>
     
     <br style="clear: both;" />
