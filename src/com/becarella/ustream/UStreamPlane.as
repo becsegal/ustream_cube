@@ -92,7 +92,7 @@ package com.becarella.ustream {
             _channel = value;
             if (viewer) {
                 try {
-                    viewer.createChannel(_channel);
+                    viewer.createChannel(_channel, false);
                 } catch (e:Error) {
                     trace("[UStreamPlane] error: " + e);
                 }
@@ -163,7 +163,6 @@ package com.becarella.ustream {
         }
         
         private function onOnline(event:Event) : void {
-            playing = _playing;
             online = true;
             updateLabel();
         }
